@@ -2,8 +2,8 @@ import request from "@/services/request"
 import baseUrl from "@/services/baseUrl"
 
 // let path = `${baseUrl.main}/${baseUrl.envName != 'development' ? "cs/" : ''}v1/`;
-// let path = `${baseUrl.main}/cs/v1/`;
-let path = `${baseUrl.devCs}/cs/v1/`;
+let path = `${baseUrl.main}/cs/v1/`;
+// let path = `${baseUrl.devCs}/cs/v1/`;
 
 // this is for globally used APIs only
 export default {
