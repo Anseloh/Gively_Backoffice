@@ -3,8 +3,8 @@ import baseUrl from "@/services/baseUrl"
 
 // let path =  `${baseUrl.main}/${baseUrl.envName != 'development'? "cs/": ''}cs/v1/`;
 let ucPath = `${baseUrl.main}/${baseUrl.envName != 'development' ? "uc/" : ''}v1/`;
-// let path = `${baseUrl.main}/cs/v1/`;
-let path = `${baseUrl.devCs}/cs/v1/`;
+let path = `${baseUrl.main}/cs/v1/`;
+// let path = `${baseUrl.devCs}/cs/v1/`;
 
 // this is for globally used APIs only
 export default {
