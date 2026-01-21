@@ -25,20 +25,15 @@ export default [{
             route: 'fundraisers-manage',
             icon: 'GridIcon',
         },
-        {
-            title: 'Categories',
-            route: 'fundraisers-categories',
-            icon: 'TargetIcon',
-        },
+        // {
+        //     title: 'Categories',
+        //     route: 'fundraisers-categories',
+        //     icon: 'TargetIcon',
+        // },
         {
             title: 'Countries',
             route: 'fundraisers-countries',
             icon: 'TargetIcon',
-        },
-        {
-            title: 'Refunds',
-            route: 'fundraisers-refunds',
-            icon: 'CreditCardIcon',
         },
     ]
 },
@@ -90,11 +85,11 @@ export default [{
         },
     ]
 },
-{
-    title: "Chat",
-    route: "apps-chat",
-    icon: "MessageSquareIcon"
-}
+// {
+//     title: "Chat",
+//     route: "apps-chat",
+//     icon: "MessageSquareIcon"
+// }
     // {
     //   title: 'API',
     //   icon: 'CodeIcon',

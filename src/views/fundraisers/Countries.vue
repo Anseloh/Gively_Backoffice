@@ -21,24 +21,24 @@
                     <label>Name</label>
                     <input v-model="searchName" type="text" class="form-control" placeholder="">
                 </div>
-                <div class="col-lg-4 col-12 col-md-6 pt-2 pt-lg-2" @click="filterCategories()">
+                <div class="col-lg-4 col-12 col-md-6 pt-2 pt-lg-2" @click="filterCountries()">
                     <span class="btn btn-primary"> <feather-icon icon="SearchIcon" /> Search</span>
                 </div>
             </div>
         </b-card>Í
         <b-card>
             <div class="pb-1">
-              <b-button @click="triggerAddCategory()" variant="primary">Add Category</b-button>
+              <b-button @click="triggerAddCountry()" variant="primary">Add Country</b-button>
             </div>
-            <b-modal id="add-category-modal" centered ok-title="Save" @ok="submittedCategory" :title="category._id ? 'Update Category': 'Create Category'" no-close-on-backdrop no-close-on-esc>
+            <b-modal id="add-country-modal" centered ok-title="Save" @ok="submittedCountry" :title="country._id ? 'Update Country': 'Create Country'" no-close-on-backdrop no-close-on-esc>
               <div class="mt-2">
-                <label for="">Name</label>
-                <b-form-input v-model="category.name" autofocus />
+                <label for="">Name (English)</label>
+                <b-form-input v-model="country.nameEn" autofocus />
                 <small class="text-danger">Required</small>
               </div>
               <div class="mt-2">
-                <label for="">Description</label>
-                <b-form-textarea v-model="category.description" />
+                <label for="">Name (French)</label>
+                <b-form-input v-model="country.nameFr" />
                 <small class="text-danger">Required</small>
               </div>
             </b-modal>
@@ -70,7 +70,7 @@
                                     </b-avatar>
                                 </div>
                                 <div class="w-100">
-                                    {{data.value}}
+                                    {{data.item.nameEn}} / {{ data.item.nameFr }}
                                 </div>
                             </div>
                         </span>
@@ -108,21 +108,21 @@
                         </template>
                         <b-dropdown-item>
                           <feather-icon icon="EditIcon" />
-                          <span class="align-middle ml-50" @click="triggerEditCategory(data.item)">Edit</span>
+                          <span class="align-middle ml-50" @click="triggerEditCountry(data.item)">Edit</span>
                         </b-dropdown-item>
-                        <b-dropdown-item @click="triggerRemoveCategory(data.item._id)">
+                        <b-dropdown-item @click="triggerRemoveCountry(data.item.id)">
                           <feather-icon icon="TrashIcon"  />
                           <span class="align-middle ml-50">Remove</span>
                         </b-dropdown-item>
                       </b-dropdown>
                     </template>
                     <template #cell(description)="data">
-                        <span class="pb-1 text-truncate d-block category-content text-primary cursor-pointer text-center" @click="showModal(data.value)">
+                        <span class="pb-1 text-truncate d-block country-content text-primary cursor-pointer text-center" @click="showModal(data.value)">
                             {{data.value}}
                         </span>
                     </template>
-                    <template #cell(shortDescription)="data">
-                        <span class="pb-1 text-truncate d-block category-content text-primary cursor-pointer text-center" @click="showModal(data.value)">
+                    <template #cell(currencyCode)="data">
+                        <span class="pb-1 text-truncate d-block country-content text-primary cursor-pointer text-center" @click="showModal(data.value)">
                             {{data.value}}
                         </span>
                     </template>
@@ -188,15 +188,17 @@ import API from './api'
 
 const toast = useToast()
 export default {
-    name: 'Categories',
+    name: 'Countries',
     components: {
         flatPickr,
         vSelect,
     },
     data() {
         return {
-            category: {
-
+            country: {
+                nameEn: '',
+                nameFr: '',
+                currencyCode: 'CAD',
             },
             dayjs: dayjs,
             currentPage: 1,
@@ -218,10 +220,10 @@ export default {
             fields: [
                 {key: 'actions', label: 'Actions'},
                 {key: 'name', label: 'Name'},
-                {key: 'description', label: 'Description'},
+                // {key: 'description', label: 'Description'},
                 // {key: 'totalActiveCampaigns', label: 'Active Campaigns'},
                 {key: 'createdAt', label: 'Created At'},
-                {key: 'updatedAt', label: 'Updated At'},
+                // {key: 'updatedAt', label: 'Updated At'},
             ],
             searchParams: {},
             itemBusy: false,
@@ -248,46 +250,41 @@ export default {
     },
     created() {
         this.items = Utils.completeTable();
-        this.getCategories();
+        this.getCountries();
     },
     methods: {
-      triggerAddCategory(){
-        this.category = {
+      triggerAddCountry(){
+        this.country = {
           name: '',
           description: '',
         }
-        this.$bvModal.show('add-category-modal');
+        this.$bvModal.show('add-country-modal');
       },
-      triggerEditCategory(category){
-        this.category = category;
-        this.$bvModal.show('add-category-modal');
+      triggerEditCountry(country){
+        this.country = country;
+        this.$bvModal.show('add-country-modal');
       },
-      submittedCategory(e){
+      submittedCountry(e){
         e.preventDefault();
-        if(!this.category.name){
-          this.showToast('Please enter name');
+        if(!this.country.nameEn || !this.country.nameFr){
+          this.showToast('Please enter country name in English and French');
           return 0;
         }
-        if(!this.category.description){
-          this.showToast('Please enter description');
-          return 0;
-        }
-        this.category.shortDescription = this.category.description;
-        const api = this.category._id? 'editCategory': 'addCategory';
-        API[api]({...this.category}).then(res => {
+        const api = this.country.id? 'editCountry': 'addCountry';
+        API[api]({...this.country}).then(res => {
           if(res.success){
-            if(this.category._id){
+            if(this.country.id){
               this.items = this.items.map(item=>{
-                if(item._id == this.category._id){
+                if(item.id == this.country.id){
                   item = res.data;
                 }
                 return item;
               })
             }else{
             //   this.items.unshift(res.data);
-                this.getCategories();
+                this.getCountries();
             }
-            this.$bvModal.hide('add-category-modal');
+            this.$bvModal.hide('add-country-modal');
           }
         }).catch(err=>{
           console.log(err);
@@ -295,11 +292,11 @@ export default {
       },
         loadNewPage(e,page) {
             e.preventDefault();
-            this.getCategories(page);
+            this.getCountries(page);
         },
-        getCategories(page = 1) {
+        getCountries(page = 1) {
             // this.pageBusy = true;
-            API.getCategories({ ...this.searchParams, page}).then(res => {
+            API.getCountries({ ...this.searchParams, page}).then(res => {
                 this.pageBusy = false;
                 if(res.success && res.data) {
                     this.currentPage = page;
@@ -308,10 +305,10 @@ export default {
                 }
             }).catch(() => {
                 this.pageBusy = false;
-                this.showToast('Failed to get categories');
+                this.showToast('Failed to get countries');
             })
         },
-         filterCategories() {
+         filterCountries() {
             if(!this.searchDate && !this.searchName && !this.status) {
                 this.searchParams = {};
             }else{
@@ -330,14 +327,14 @@ export default {
                     this.searchParams.endDate = this.searchDate.to + ' 23:59:59';
                 }
             }
-            this.getCategories(1);
+            this.getCountries(1);
             this.currentPage = 1;
         },
         showToast(message, icon, variant) {
             this.$toast({
                 component: ToastificationContent,
                 props: {
-                    title: message || 'Error fetching categories',
+                    title: message || 'Error fetching countries',
                     icon: icon || 'InfoIcon',
                     variant: variant || 'danger',
                 },
@@ -345,7 +342,7 @@ export default {
         },
         showModal(description) {
             this.$bvModal.msgBoxOk(description, {
-            title: 'Category',
+            title: 'Country',
             size: 'md',
             buttonSize: 'md',
             okVariant: 'primary',
@@ -361,9 +358,9 @@ export default {
                 // An error occurred
             })
         },
-        triggerRemoveCategory(id) {
-            this.$bvModal.msgBoxConfirm("Are you sure you want to delete this category? any campaign associated with this category will be lost", {
-            title: 'Remove Category',
+        triggerRemoveCountry(id) {
+            this.$bvModal.msgBoxConfirm("Are you sure you want to delete this country? This would still be visible for fundraisers that were attached to it", {
+            title: 'Remove Country',
             size: 'md',
             buttonSize: 'sm',
             okVariant: 'danger',
@@ -375,24 +372,24 @@ export default {
             })
             .then(value => {
                 if(value){
-                    this.removeCategory(id);
+                    this.removeCountry(id);
                 }
             })
             .catch(err => {
                 // An error occurred
             })
         },
-        removeCategory(id) {
-          API.removeCategory({_id: id}).then(res => {
+        removeCountry(id) {
+          API.removeCountry(id).then(res => {
             this.pageBusy = false;
             if(res.success) {
-              this.items = this.items.filter(item => item._id != id);
-                // this.getCategories(this.currentPage);
-                this.showToast('Category removed successfully', 'CheckIcon', 'success');
+              this.items = this.items.filter(item => item.id != id);
+                // this.getCountries(this.currentPage);
+                this.showToast('Country removed successfully', 'CheckIcon', 'success');
             }
           }).catch(() => {
               this.pageBusy = false;
-              this.showToast('Failed to remove category');
+              this.showToast('Failed to remove country');
           })
         }
     }
@@ -404,11 +401,11 @@ export default {
     @import '@core/scss/vue/libs/vue-select.scss';
     @import '@core/scss/vue/libs/vue-flatpicker.scss';
 
-    .category-content{
+    .country-content{
 
         max-width: 100px !important;
     }
-    .category-content:hover{
+    .country-content:hover{
         transform: scale(1.2);
     }
 </style>

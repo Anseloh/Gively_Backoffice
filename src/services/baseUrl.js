@@ -4,9 +4,9 @@ const env = process.env.NODE_ENV;
 
 const PROD = "https://api.givelycf.com";
 
-const STAG = "https://staging-api.givelycf.com";
+const STAG = "https://api.givelycf.com";
 
-const DEV = "http://localhost:6501";
+const DEV = "http://localhost:6602";
 // const DEV = "https://staging-api.givelycf.com";
 
 let baseUrl = PROD;
