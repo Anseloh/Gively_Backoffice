@@ -9,7 +9,7 @@ let path = `${baseUrl.main}/cs/v1/`;
 export default {
   getEvents: (params = {}) => request.post(path + "events/bo/list", params),
   getEventDetails: (params = {}) => request.post(path + "events/bo/detail", params),
-  createEvent: (params = {}) => request.put(path + "events/bo/create/", params),
-  editEvent: (params = {}) => request.put(path + "events/bo/update/" + params.id, params)
+  createEvent: (params = {}) => request.post(path + "events/bo/create/", params),
+  editEvent: (params = {}) => request.post(path + "events/bo/update/" + params.id, params)
   // review: (params = {}) => request.post(baseUrl.main + "/ba021/v1/rnv/user/applications/review", params)
 }

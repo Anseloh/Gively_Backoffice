@@ -94,7 +94,7 @@
                         </span>
                     </template>
                     <template #cell()="data">
-                        <div class="text-nowrap pt-1">
+                        <div class="text-nowrap small pt-1">
                             {{data.value}}
                         </div>
                     </template>
@@ -132,64 +132,58 @@
                                     icon="MoreVerticalIcon"
                                 ></feather-icon>
                             </template>
-                            <b-dropdown-item :to="`/users/list?user=${data.item.createdBy}`">
+                            <!-- <b-dropdown-item :to="`/users/list?user=${data.item.createdBy}`">
                                 <feather-icon
                                     icon="UserIcon"
                                 />
                                 See creator
-                            </b-dropdown-item>
-                            <b-dropdown-item :to="`/transactions/backings?fundraiserId=${data.item._id}`" v-if="mode.value != 'draft'">
+                            </b-dropdown-item> -->
+                            <b-dropdown-item :to="`/transactions/donations?fundraiserId=${data.item.id}`" v-if="mode.value != 'draft'">
                                 <feather-icon
                                     icon="NoteIcon"
                                 />
-                                See backings
+                                See donations
                             </b-dropdown-item>
-                            <b-dropdown-item @click="toggleVisibility(data.item)" v-if="mode.value != 'draft'">
+                            <!-- <b-dropdown-item @click="toggleVisibility(data.item)">
                                 <feather-icon
                                     :icon="data.item.isVisible ? 'EyeOffIcon': 'EyeIcon'"
                                 />
                                 {{ data.item.isVisible? "Hide from website": "Show on website" }}
-                            </b-dropdown-item>
-                            <b-dropdown-item @click="resetSubmission(data.item)">
-                                <feather-icon
-                                    :icon="'SettingsIcon'"
-                                />
-                                Reset submission
-                            </b-dropdown-item>
-                            <b-dropdown-item @click="toggleFeatured(data.item)" v-if="mode.value != 'draft'">
+                            </b-dropdown-item> -->
+                            <!-- <b-dropdown-item @click="toggleFeatured(data.item)">
                                 <feather-icon
                                     icon="TagIcon"
                                 />
                                 {{ data.item.isFeatured? "Remove from featured": "Make as featured" }}
-                            </b-dropdown-item>
-                            <b-dropdown-item @click="showFundraiser(data.item)" v-if="mode.value == 'draft'">
+                            </b-dropdown-item> -->
+                            <b-dropdown-item target="_blank" :href="`${websiteLink}/fundraiser/${data.item.permaLink}`">
                                 <feather-icon
                                     icon="EyeIcon"
                                 />
                                 Preview
                             </b-dropdown-item>
-                            <b-dropdown-item v-else target="_blank" :href="`${websiteLink}/fundraiser/${data.item._id}`">
-                                <feather-icon
-                                    icon="EyeIcon"
-                                />
-                                Preview
-                            </b-dropdown-item>
-                            <b-dropdown-item v-if="mode.value == 'draft' && data.item.status == 2" @click="triggerProcessing(data.item)">
+                            <b-dropdown-item v-if="data.item.status" @click="triggerProcessing(data.item)">
                                 <feather-icon
                                     icon="CheckIcon"
                                 />
-                                Approve / Reject
+                                Review fundraiser
                             </b-dropdown-item>
-                            <b-dropdown-item variant="danger" v-if="mode.value == 'draft' && data.item.status == statuses.pendingDeletion" @click="deleteFundraiser(data.item)">
+                            <!-- <b-dropdown-item v-if="data.item.status == statuses.pending" @click="triggerProcessing(data.item)">
+                                <feather-icon
+                                    icon="CheckIcon"
+                                />
+                                Review fundraiser
+                            </b-dropdown-item> -->
+                            <!-- <b-dropdown-item variant="danger" v-if="data.item.status == statuses.pending" @click="deleteFundraiser(data.item)">
                                 <feather-icon
                                     icon="TrashIcon"
                                 />
                                 Delete fundraiser
-                            </b-dropdown-item>
+                            </b-dropdown-item> -->
                         </b-dropdown>
                     </template>
                     <template #cell(coverPhoto)="data">
-                        <span class="text-nowrap" v-if="data.item._id">
+                        <span class="text-nowrap" v-if="data.item.id">
                             <b-img :src="data.value" style="height: 50px" rounded class="cursor-pointer" @click="triggerViewImage([data.value])">
 
                             </b-img>
@@ -207,7 +201,7 @@
             <b-modal id="view-fundraiser" ok-only title="View Fundraiser Detail" size="xl" centered no-close-on-backdrop no-close-on-esc>
                <div class="row">
                    <div class="col-12" style="min-height: 600px;">
-                       <iframe class="w-100" height="100%" :src="`${link}/preview-fundraiser/data-only/fundraiser?id=${account._id}&mode=${mode.value}`" frameborder="0"></iframe>
+                       <iframe class="w-100" height="100%" :src="`${link}/preview-fundraiser/data-only/fundraiser?id=${account.id}&mode=${mode.value}`" frameborder="0"></iframe>
                        <!-- <fundraiser :fundraiser="account" /> -->
                    </div>
                </div>
@@ -253,16 +247,38 @@
                             <h4 class="text-primary">Fundraiser Information</h4>
                             <h5 class="font-weight-bolder">Title</h5>
                             <span>{{account.title}}</span>
+                            <h5 class="font-weight-bolder">Country</h5>
+                            <span v-if="account && account.country">{{account.country.nameEn}}</span>
+                            <h5 class="font-weight-bolder">Target amount</h5>
+                            <span v-if="account.targetAmount">{{currency(account.targetAmount)}} CAD</span>
+                            <h5 class="font-weight-bolder">Current amount</h5>
+                            <span v-if="account.currentAmount">{{currency(account.currentAmount)}} CAD</span>
+                            <div>
+                                <h5 class="font-weight-bolder">Allow recommendations</h5>
+                                <span>{{account.allowRecommendation ? 'Yes' : 'No'}}</span>
+                            </div>
+                            <div>
+                                <h5 class="font-weight-bolder">Disable search</h5>
+                                <span>{{account.disableSearch ? 'Yes' : 'No'}}</span>
+                            </div>
+                            <div>
+                                <h5 class="font-weight-bolder">Is Featured fundraiser</h5>
+                                <span>{{account.isFeatured ? 'Yes' : 'No'}}</span>
+                            </div>
+                            <div>
+                                <h5 class="font-weight-bolder">Is visible</h5>
+                                <b-badge :variant="account.isVisible ? 'success' : 'secondary'">{{account.isVisible ? 'Yes' : 'No'}}</b-badge>
+                            </div>
                             <h5 class="font-weight-bolder mt-2">Banner</h5>
                             <b-img rounded style="max-height: 400px; max-width: 100%" :src="account.coverPhoto" class="cursor-pointer" @click="triggerViewImage([account.coverPhoto])">
 
                             </b-img>
-                            <h5 class="font-weight-bolder mt-2">Description</h5>
-                            <span>{{account.shortDesc}}</span>
+                            <h5 class="font-weight-bolder mt-2">Story</h5>
+                            <div v-html="account.story"></div>
                             <h5 class="font-weight-bolder mt-2">Gallery</h5>
                             <div>
-                                <div class="d-inline-block mr-1" v-for="item in account.galleryImages" :key="item">
-                                    <b-img :src="item" rounded height="100px" class="cursor-pointer" @click="triggerViewImage(account.galleryImages)">
+                                <div class="d-inline-block mr-1" v-for="item in account.gallery" :key="item">
+                                    <b-img :src="item" rounded height="100px" class="cursor-pointer" @click="triggerViewImage(account.gallery)">
 
                                     </b-img>
                                 </div>
@@ -293,18 +309,19 @@
                                     <b-form-radio v-model="applicationStatus" value="2">
                                         Decline
                                     </b-form-radio>
+                                    <b-form-radio v-model="applicationStatus" value="3">
+                                        Decline permanently
+                                    </b-form-radio>
                                 </div>
-                                <div v-if="applicationStatus == 2" class="mt-1">
-                                    <label class=""> Motive </label>
-                                    <v-select  v-model="user.status"  :options="feedbackOptions"></v-select>
+                                <div v-if="applicationStatus > 1" class="mt-1">
                                     <div>
-                                        <label class="mt-2"> Description </label>
+                                        <label class="mt-2"> Reason </label>
                                         <b-textarea v-model="user.text">
                                         </b-textarea>
                                     </div>
                                 </div>
                                 <div class="mt-2">
-                                    <b-button rounded variant="primary" @click="addReview(hide)" :disabled="!applicationStatus || (applicationStatus == 2 && (!user.status.value || (user.status.value == 5 && !user.text.trim().length)))">
+                                    <b-button rounded variant="primary" @click="addReview(hide)" :disabled="!applicationStatus || (applicationStatus > 1 && (!user.text.trim().length))">
                                         Submit
                                     </b-button>
                                 </div>
@@ -372,7 +389,7 @@ export default {
                 // rejected: -10,
             },
             link: 'https://www.givelycf.com',
-            stagingLink: 'https://staging.givelycf.com',
+            stagingLink: 'https://test.givelycf.com',
             ftoken: '',
             dayjs: dayjs,
             currentPage: 1,
@@ -383,18 +400,15 @@ export default {
             dateRange: '',
             searchTitle: '',
             status: '',
-            statuses: {
-                initialized: 20,
-                notPublished: 1,
-                pending: 2,
-                approved: 10,
+            statuses: Object.freeze({
+                pending: 10,
+                paused: 20,
+                running: 30,
+                ended: 40,
+                cancelled: -30,
                 rejected: -10,
-                running: 300,
-                stopped: -300,
-                approved2: 100,
-                paused: 400,
-                pendingDeletion: 500,
-            },
+                rejectedPermanently: -100,
+            }),
             displayStatus:[
                 {
                     10: "Pending",
@@ -402,6 +416,8 @@ export default {
                     30: "Running",
                     40: "Ended",
                     '-30': "Cancelled",
+                    '-10': "Rejected",
+                    '-100': "Rejected permanently",
                     'undefined': 'Unknown status'
                 },
                 {
@@ -409,7 +425,9 @@ export default {
                     20: "warning",
                     30: "success",
                     40: "primary",
-                    '-30': "Cancelled",
+                    '-30': "danger",
+                    '-10': "danger",
+                    '-100': "danger",
                     'undefined': 'dark'
                 },
             ],
@@ -419,6 +437,8 @@ export default {
                 {label:'Running',"value":30},
                 {label:'Ended',"value":40},
                 {label:'Canceled',"value":-30},
+                {label:'Rejected',"value":-10},
+                {label:'Rejected permanently',"value":-100},
             ],
             modeOptions: [
                 {label:'Published',"value":'submitted'},
@@ -468,6 +488,7 @@ export default {
             ],
             pendingFields: [
                 {key: 'actions', label: 'Actions'},
+                {key: 'id', label: 'ID'},
                 {key: 'title', label: 'Title'},
                 {key: 'visibility', label: 'Visibility'},
                 {key: 'status', label: 'Running Status'},
@@ -482,7 +503,6 @@ export default {
                 {key: 'title', label: 'Title'},
                 {key: 'status', label: 'Running Status'},
                 {key: 'type', label: 'Type'},
-                // {key: 'shortDesc', label: 'Description'},
                 {key: 'coverPhoto', label: 'Banner'},
                 {key: 'createdAt', label: 'Created At'},
                 {key: 'updatedAt', label: 'Updated At'},
@@ -553,15 +573,7 @@ export default {
         this.ftoken = vm.$fileAccessToKen;
     },
     methods: {
-        resetSubmission(item){
-            API.resetSubmission({}, item._id).then(res=>{
-                if(res.success) {
-                    this.showToast('Fundraiser draft submission reset successfully','CheckCircle','success');
-                }
-            }).catch(e => {
-                console.log(e);
-            });
-        },
+        currency: Utils.formatCurrency,
         toggleVisibility(item){
             const isVisible = item.isVisible ? false : true;
             API.toggleVisibility({isVisible}, item._id).then(res=>{
@@ -694,16 +706,16 @@ export default {
             //     return 0;
             // }
             const data = {
-                id: this.user.id,
+                id: this.account.id,
                 message: '',
-                status: this.applicationStatus == 1? 5: -5
+                status: this.applicationStatus == 1? 30:(this.applicationStatus == 2? -10: -100)
             }
             if(this.user.status.value == 5){
                 data.message = this.user.text.trim();
             }else if(this.applicationStatus != 1){
                 data.message = this.user.status.label + ". " + this.user.text.trim();
             }
-            API.fundraiserRemark({...data}).then(res=>{
+            API.reviewFundraiser({...data}).then(res=>{
                 if(res.success && res.data) {
                     this.resetReview();
                     setTimeout(()=>{

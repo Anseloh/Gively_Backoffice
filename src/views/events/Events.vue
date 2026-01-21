@@ -25,17 +25,17 @@
                     <label>Visibility</label>
                     <v-select  v-model="visible" :reduce="e=>e.value" :options="visibleOptions" :searchable="false" :clearable="false"></v-select>
                 </div> -->
-                <div class="col-lg-3 col-12 col-md-6">
+                <!-- <div class="col-lg-3 col-12 col-md-6">
                     <label>State</label>
                     <v-select  v-model="status" :options="statusOptions"></v-select>
-                </div>
+                </div> -->
                 <div class="col-lg-3 col-12 col-md-6">
                     <label>Event title</label>
                     <input v-model="searchTitle" type="text" class="form-control" placeholder="">
                 </div>
                 <div class="col-lg-3 col-12 col-md-6">
-                    <label>Creator id</label>
-                    <input v-model="userId" type="text" class="form-control" placeholder="">
+                    <label>Event id</label>
+                    <input v-model="eventIt" type="text" class="form-control" placeholder="">
                 </div>
                 <div class="col-lg-3 col-12 col-md-6 pt-2 pt-lg-2" @click="filterFeedback()">
                     <span class="btn btn-primary"> <feather-icon icon="SearchIcon" /> Search</span>
@@ -45,7 +45,7 @@
         <b-card>
             <b-overlay :show="itemBusy">
                 <div class="p-1">
-                    <b-button variant="primary"><feather-icon icon="PlusIcon" />  Create event</b-button>
+                    <b-button variant="primary" @click="triggerCreateEvent()"><feather-icon icon="PlusIcon" />  Create event</b-button>
                 </div>
                 <b-table
                     class="rounded border"
@@ -145,60 +145,49 @@
                                     icon="MoreVerticalIcon"
                                 ></feather-icon>
                             </template>
-                            <b-dropdown-item :to="`/users/list?user=${data.item.createdBy}`">
-                                <feather-icon
-                                    icon="UserIcon"
-                                />
-                                See creator
-                            </b-dropdown-item>
-                            <b-dropdown-item :to="`/transactions/backings?eventId=${data.item._id}`" v-if="mode.value != 'draft'">
+                            <b-dropdown-item :to="`/transactions/tickets?eventId=${data.item.id}`" v-if="mode.value != 'draft'">
                                 <feather-icon
                                     icon="NoteIcon"
                                 />
-                                See backings
+                                See attendees
                             </b-dropdown-item>
-                            <b-dropdown-item @click="toggleVisibility(data.item)" v-if="mode.value != 'draft'">
+                            <!-- <b-dropdown-item @click="toggleVisibility(data.item)" v-if="mode.value != 'draft'">
                                 <feather-icon
                                     :icon="data.item.isVisible ? 'EyeOffIcon': 'EyeIcon'"
                                 />
                                 {{ data.item.isVisible? "Hide from website": "Show on website" }}
-                            </b-dropdown-item>
-                            <b-dropdown-item @click="resetSubmission(data.item)">
+                            </b-dropdown-item> -->
+                            <!-- <b-dropdown-item @click="resetSubmission(data.item)">
                                 <feather-icon
                                     :icon="'SettingsIcon'"
                                 />
                                 Reset submission
-                            </b-dropdown-item>
-                            <b-dropdown-item @click="toggleFeatured(data.item)" v-if="mode.value != 'draft'">
+                            </b-dropdown-item> -->
+                            <!-- <b-dropdown-item @click="toggleFeatured(data.item)" v-if="mode.value != 'draft'">
                                 <feather-icon
                                     icon="TagIcon"
                                 />
                                 {{ data.item.isFeatured? "Remove from featured": "Make as featured" }}
-                            </b-dropdown-item>
-                            <b-dropdown-item @click="showEvent(data.item)" v-if="mode.value == 'draft'">
+                            </b-dropdown-item> -->
+                            <!-- <b-dropdown-item @click="showEvent(data.item)" v-if="mode.value == 'draft'">
                                 <feather-icon
                                     icon="EyeIcon"
                                 />
                                 Preview
-                            </b-dropdown-item>
-                            <b-dropdown-item v-else target="_blank" :href="`${websiteLink}/event/${data.item._id}`">
+                            </b-dropdown-item> -->
+                            <!-- <b-dropdown-item v-else target="_blank" :href="`${websiteLink}/event/${data.item._id}`">
                                 <feather-icon
                                     icon="EyeIcon"
                                 />
                                 Preview
-                            </b-dropdown-item>
-                            <b-dropdown-item v-if="mode.value == 'draft' && data.item.status == 2" @click="triggerProcessing(data.item)">
-                                <feather-icon
-                                    icon="CheckIcon"
-                                />
-                                Approve / Reject
-                            </b-dropdown-item>
-                            <b-dropdown-item variant="danger" v-if="mode.value == 'draft' && data.item.status == statuses.pendingDeletion" @click="deleteEvent(data.item)">
+                            </b-dropdown-item> -->
+                            
+                            <!-- <b-dropdown-item variant="danger" v-if="mode.value == 'draft' && data.item.status == statuses.pendingDeletion" @click="deleteEvent(data.item)">
                                 <feather-icon
                                     icon="TrashIcon"
                                 />
                                 Delete event
-                            </b-dropdown-item>
+                            </b-dropdown-item> -->
                         </b-dropdown>
                     </template>
                     <template #cell(coverPhoto)="data">
@@ -250,102 +239,69 @@
                 backdrop
                 v-model="showSidebar"
                 right
-                title="Event Approval"
+                title="Event information"
                 title-background="primary"
                 no-close-on-backdrop
                 >
-                <template #footer="{  }">
+                <template #footer="{ hide }">
                     <div class="d-flex bg-dark text-light align-items-center p-1">
-                        <!-- @@TODO Make the address dynamic on production  -->
-                        <b-button variant="primary" @click="showEvent">View Full Event Details</b-button>
+                        <b-button variant="primary" @click="addEvent(hide)">Submit now</b-button>
                     </div>
                 </template>
-                <template #default="{ hide }">
-                    <div>
+                <template #default="{  }">
+                    <div style="max-width: 400px;">
                         <div class="p-2 border-bottom border-top">
-                            <h4 class="text-primary">Event Information</h4>
                             <h5 class="font-weight-bolder">Title</h5>
-                            <span>{{account.title}}</span>
-                            <h5 class="font-weight-bolder mt-2">Banner</h5>
-                            <b-img rounded style="max-height: 400px; max-width: 100%" :src="account.coverPhoto" class="cursor-pointer" @click="triggerViewImage([account.coverPhoto])">
-
-                            </b-img>
-                            <h5 class="font-weight-bolder mt-2">Description</h5>
-                            <span>{{account.shortDesc}}</span>
-                            <h5 class="font-weight-bolder mt-2">Gallery</h5>
-                            <div>
-                                <div class="d-inline-block mr-1" v-for="item in account.galleryImages" :key="item">
-                                    <b-img :src="item" rounded height="100px" class="cursor-pointer" @click="triggerViewImage(account.galleryImages)">
-
-                                    </b-img>
+                            <b-input v-model="event.title"></b-input>
+                            <div class="mt-2">
+                                <h5 class="font-weight-bolder">Description</h5>
+                                <b-textarea v-model="event.desc"></b-textarea>
+                            </div>
+                            <div class="mt-2">
+                                <h5 class="font-weight-bolder">Date</h5>
+                                <b-input type="datetime-local" v-model="event.date" />
+                            </div>
+                            <div class="mt-2">
+                                <h5 class="font-weight-bolder">Location</h5>
+                                <b-input v-model="event.location"></b-input>
+                            </div>
+                            <div class="mt-2">
+                                <h5 class="font-weight-bolder">Cover photo</h5>
+                                <img :src="event.coverPhoto" alt="" class="rounded d-inline-block" style="max-width: 300px;">
+                            </div>
+                            
+                            <div class="mt-2 border-rounded border p-1">
+                                <h5 class="font-weight-bolder text-primary">Ticket </h5>
+                                <h6 class="font-weight-bolder">Amount </h6>
+                                <b-input-group >
+                                    <b-input v-model="event.ticket.amount" type="number" />
+                                    <b-input-group-prepend is-text>
+                                        {{ event.ticket.currencyCode }}
+                                    </b-input-group-prepend>
+                                </b-input-group>
+                                <h6 class="font-weight-bolder mt-1">Capacity </h6>
+                                <b-input-group >
+                                    <b-input v-model="event.ticket.capacity" type="number" />
+                                </b-input-group>
+                            </div>
+                            <div class="mt-2">
+                                <h5 class="font-weight-bolder text-primary">Speakers </h5>
+                                <div v-for="(item, i) in event.speakers" :key="i" class="border-rounded border p-1 my-1">
+                                    <h6 class="font-weight-bolder mt-1">Name </h6>
+                                    <b-input v-model="item.name"/>
+                                    <h6 class="font-weight-bolder mt-1">Position </h6>
+                                    <b-input v-model="item.post" />
+                                    <h6 class="font-weight-bolder mt-1">Image </h6>
+                                    <img src="https://placehold.co/400" style="height: 75px;" alt="">
+                                </div>
+                                <div class="mt-1">
+                                    <b-button size="sm" variant="success" @click="addSpeaker">Add speaker</b-button>
                                 </div>
                             </div>
+                        
+                            
 
-                            <div v-if="account.businessType == 3">
-                                <h5 class="font-weight-bolder mt-1">
-                                    Registration Documents
-                                </h5>
-                                <b-list-group>
-                                    <b-list-group-item v-for="(i,j) in account.regDocument" :key="j">
-                                        <a :href="i + '?' +ftoken" target="_blank" class="d-block">
-                                            <b-img fluid rounded :src="i + '?' +ftoken" v-if="i.includes('.png') || i.includes('.gif') || i.includes('.jpeg') || i.includes('.jpg')"></b-img>
-                                            <small class="text-muted text-nowrap d-block mt-1 text-truncate">
-                                                {{i + '?' +ftoken}}
-                                            </small>
-                                        </a>
-                                    </b-list-group-item>
-                                </b-list-group>
-                            </div>
-
-                            <div v-if="account.status !=5 && account.status !=-5">
-                                <h4 class="text-primary mt-2 pt-2 border-top">Add review</h4>
-                                <div class="d-flex justify-content-between">
-                                    <b-form-radio v-model="applicationStatus" value="1">
-                                        Approve
-                                    </b-form-radio>
-                                    <b-form-radio v-model="applicationStatus" value="2">
-                                        Decline
-                                    </b-form-radio>
-                                </div>
-                                <div v-if="applicationStatus == 2" class="mt-1">
-                                    <label class=""> Motive </label>
-                                    <v-select  v-model="user.status"  :options="feedbackOptions"></v-select>
-                                    <div>
-                                        <label class="mt-2"> Description </label>
-                                        <b-textarea v-model="user.text">
-                                        </b-textarea>
-                                    </div>
-                                </div>
-                                <div class="mt-2">
-                                    <b-button rounded variant="primary" @click="addReview(hide)" :disabled="!applicationStatus || (applicationStatus == 2 && (!user.status.value || (user.status.value == 5 && !user.text.trim().length)))">
-                                        Submit
-                                    </b-button>
-                                </div>
-                            </div>
                         </div>
-                        <h4 class="p-2 text-primary" v-if="account.reviewHistory && account.reviewHistory.length">Recent Rejections</h4>
-                        <b-list-group>
-                            <b-list-group-item v-for="(review, j) in account.reviewHistory" :key="j">
-                                <div class="alert alert-secondary rounded p-1 mb-0">
-                                    <div>
-                                        <b-badge :variant="displayStatus[1][review.status]">
-                                            {{ displayStatus[0][review.status] }}
-                                        </b-badge>
-                                    </div>
-                                    {{review.message}}
-                                </div>
-                                <div class="d-flex p-0">
-                                    <div class="w-100">
-                                        <small>{{review.reviewer}}</small>
-                                    </div>
-                                    <div class="text-right text-nowrap">
-                                        <small class="text-primary">
-                                            {{ dayjs(review.time).format("MMM D, YYYY h:mm A") }}
-                                        </small>
-                                    </div>
-                                </div>
-                            </b-list-group-item>
-                        </b-list-group>
                     </div>
                 </template>
             </b-sidebar>
@@ -378,6 +334,26 @@ export default {
     },
     data() {
         return {
+            event: {
+                title: '',
+                desc: '',
+                date: '',
+                location: '',
+                coverPhoto: 'https://nabdgzjpwhkjfimljnql.supabase.co/storage/v1/object/public/replicate-cache/29d39e5e77cea57baab362511463ae21.webp',
+                ticket: {
+                    amount: null,
+                    capacity: '',
+                    currencyCode: 'CAD'
+                },
+                speakers: [
+
+                ]
+            },
+            speaker: {
+                name: '',
+                post: '',
+                image: 'https://placehold.co/400'
+            },
             eventTargets:{
                 '1': 'Yourself',
                 '5': 'Someone else',
@@ -443,7 +419,7 @@ export default {
                 {label:'Featured', value: true}
             ],
             visible: '',
-            userId: '',
+            eventIt: '',
             visibleOptions: [
                 {label:'All', value: ''},
                 {label:'Visible', value: true},
@@ -556,7 +532,7 @@ export default {
         this.items = Utils.completeTable();
         const  { user } = this.$route.query;
         if(user){
-            this.userId = user;
+            // 
         }
         // this.getEvents();
     },
@@ -567,6 +543,18 @@ export default {
         this.ftoken = vm.$fileAccessToKen;
     },
     methods: {
+        addSpeaker(){
+            this.event.speakers.push(
+                JSON.parse(JSON.stringify(this.speaker))
+            )
+        },
+        triggerCreateEvent(){
+            this.showSidebar = true;
+            this.resetEvent();
+            this.$nextTick(e=>{
+                this.addSpeaker();
+            })
+        },
         resetSubmission(item){
             API.resetSubmission({}, item._id).then(res=>{
                 if(res.success) {
@@ -702,33 +690,72 @@ export default {
                 // An error occurred
             })
         },
-        addReview(e) {
-            // if(this.applicationStatus == 1){
-            //     this.runEvent(e);
-            //     return 0;
-            // }
-            const data = {
-                id: this.user.id,
-                message: '',
-                status: this.applicationStatus == 1? 5: -5
+        validateEvent(){
+            let result = true;
+
+            if(!this.event.title){
+                result = false
             }
-            if(this.user.status.value == 5){
-                data.message = this.user.text.trim();
-            }else if(this.applicationStatus != 1){
-                data.message = this.user.status.label + ". " + this.user.text.trim();
+            if(!this.event.desc) result = false
+            if(!this.event.date) result = false
+            if(!this.event.location) result = false
+            if(!this.event.coverPhoto) result = false
+            if(!this.event?.ticket?.amount) result = false
+            if(!this.event?.ticket?.capacity) result = false
+
+            for(let i = 0; i<this.event.speakers.length; i++){
+                const speaker = this.event.speakers[i];
+                if(!speaker.name) result = false;
+                if(!speaker.post) result = false;
+                if(!speaker.image) result = false;
             }
-            API.eventRemark({...data}).then(res=>{
-                if(res.success && res.data) {
-                    this.resetReview();
-                    setTimeout(()=>{
-                        this.getEvents(this.currentPage);
-                    },200);
+
+            return result;
+
+        },
+        resetEvent(){
+            this.event = {
+                title: '',
+                desc: '',
+                date: '',
+                location: '',
+                coverPhoto: 'https://nabdgzjpwhkjfimljnql.supabase.co/storage/v1/object/public/replicate-cache/29d39e5e77cea57baab362511463ae21.webp',
+                ticket: {
+                    amount: null,
+                    capacity: '',
+                    currencyCode: 'CAD'
+                },
+                speakers: [
+
+                ]
+            }
+        },
+        addEvent(e) {
+            if(!this.validateEvent()){
+                this.showToast("All fields are required");
+                return;
+            }
+
+            const params = {
+                ...this.event,
+                date: new Date(this.event.date).toISOString()
+            }
+
+            API.createEvent(params).then(res=>{
+
+                if(res.success){
                     e();
-                    this.showToast('Review Added successfully','CheckCircle','success');
+                    this.resetEvent();
+                    this.getEvents();
                 }
+
             }).catch(err=>{
                 console.log(err);
+                this.showToast('Failed to create event')
             })
+
+
+            // e();
         },
         resetReview(){
             this.user = {
@@ -772,8 +799,8 @@ export default {
             if(this.featuredOption) {
                 this.searchParams.isFeatured = true;
             }
-            if(this.userId) {
-                this.searchParams.userId = this.userId;
+            if(this.eventIt) {
+                this.searchParams.eventIt = this.eventIt;
             }
             if(this.visible !== '') {
                 this.searchParams.isVisible = this.visible;

@@ -284,7 +284,7 @@ export default [
         contentClass: 'all-fundraisers-class',
         breadcrumb: [
           {
-            text: 'Categories',
+            text: 'Countries',
             active: true,
           },
         ],
